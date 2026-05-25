@@ -1,1 +1,130 @@
-# -
+import random
+
+# 猜數字功能
+def guess_number():
+while True:
+try:
+guess = int(input("請輸入 1~100 的數字："))
+
+# 限制範圍
+if 1 <= guess <= 100:
+return guess
+else:
+print("請輸入 1~100 的數字！")
+
+except:
+print("請輸入有效的數字！")
+
+
+# 技能功能
+def use_skill(answer):
+print("\n🎯 選擇技能")
+print("1. 區間提示（提示答案範圍）")
+print("2. 接近提示（提示是否接近答案）")
+
+skill = input("請選擇技能：")
+
+# 區間提示
+if skill == "1":
+if answer <= 50:
+print("📌 答案在 1~50")
+else:
+print("📌 答案在 51~100")
+
+# 接近提示
+elif skill == "2":
+
+test = guess_number()
+
+if abs(answer - test) <= 10:
+print("📌 差距 10 以內！")
+
+else:
+print("📌 超過 10")
+
+else:
+print("無效技能！")
+
+
+# 主程式
+def main():
+
+answer = random.randint(1, 100)
+
+skills_left = 2
+rounds = 0
+max_rounds = 10
+
+# 紀錄猜過的數字
+guess_history = []
+
+print("🎲 歡迎來到《數字獵人》！")
+
+while True:
+
+rounds += 1
+
+print(f"\n--- 第 {rounds} 回合 ---")
+
+# 最大回合限制
+if rounds > max_rounds:
+print("❌ 已超過最大回合數！")
+print("正確答案是：", answer)
+break
+
+print("1. 猜數字")
+print(f"2. 使用技能（剩餘 {skills_left} 次）")
+
+choice = input("請選擇：")
+
+# 猜數字
+if choice == "1":
+
+guess = guess_number()
+
+# 防止重複猜測
+if guess in guess_history:
+print("⚠️ 你已經猜過這個數字了！")
+
+else:
+guess_history.append(guess)
+
+print("📖 已猜過的數字：", guess_history)
+
+# 判斷答案
+if guess == answer:
+print(f"🎉 恭喜猜對了！")
+print(f"你總共用了 {rounds} 回合")
+break
+
+elif guess > answer:
+print("📉 太大了！")
+
+else:
+print("📈 太小了！")
+
+# 使用技能
+elif choice == "2":
+
+if skills_left > 0:
+use_skill(answer)
+skills_left -= 1
+
+else:
+print("❌ 技能已用完！")
+
+else:
+print("請輸入正確選項！")
+
+# 是否重新開始
+again = input("\n是否再玩一次？(y/n)：")
+
+if again == "y":
+main()
+
+else:
+print("👋 遊戲結束！")
+
+
+# 執行遊戲
+main()
