@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>數字獵人（多人版）</title>
+
+<style>
+body{
+    margin:0;
+    font-family:"Microsoft JhengHei";
+    background: radial-gradient(circle,#0f172a,#020617);
+    color:white;
+    text-align:center;
+}
+
+/* 標題 */
+h1{
+    font-size:48px;
+    color:#38bdf8;
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow{
+    from{ text-shadow:0 0 10px #38bdf8; }
+    to{ text-shadow:0 0 25px #0ea5e9; }
+}
+
+/* 玩家區 */
+.players{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    margin:10px;
+    flex-wrap:wrap;
+}
+
+.player{
+    background:#1e293b;
+    padding:15px;
+    border-radius:15px;
+    width:180px;
+    box-shadow:0 0 10px #0ea5e9;
+}
+
+.player h3{
+    color:#facc15;
+}
+
+/* 數字卡 */
+.container{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    margin-top:20px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(10,1fr);
+    gap:6px;
+    width:65%;
+}
+
+.card{
+    background: linear-gradient(145deg,#2563eb,#1e40af);
+    padding:15px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:0.2s;
+    font-weight:bold;
+}
+
+.card:hover{
+    transform:scale(1.2);
+}
+
+.used{
+    background:#334155;
+    opacity:0.4;
+    pointer-events:none;
+}
+
+/* 技能卡 */
+.skills{
+    width:220px;
+}
+
+.skill{
+    background: linear-gradient(145deg,#f97316,#ea580c);
+    margin:10px;
+    padding:18px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:0.2s;
+    font-weight:bold;
+}
+
+.skill:hover{
+    transform:scale(1.1);
+}
+
+/* 狀態 */
+.info{
+    margin:10px;
+    font-size:18px;
+}
+
+.turn{
+    color:#facc15;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🎲 數字獵人（多人版）</h1>
+
+<div class="info">
+    <div>🎯 神秘數字已生成（1~100）</div>
+    <div class="turn" id="turnText">目前：玩家1 回合</div>
+    <div id="msg">開始遊戲！</div>
+</div>
+
+<!-- 玩家區 -->
+<div class="players">
+
+    <div class="player">
+        <h3>玩家1</h3>
+        <input type="number" id="p1" placeholder="猜數字">
+        <button onclick="guess(1)">猜</button>
+    </div>
+
+    <div class="player">
+        <h3>玩家2</h3>
+        <input type="number" id="p2" placeholder="猜數字">
+        <button onclick="guess(2)">猜</button>
+    </div>
+
+    <div class="player">
+        <h3>玩家3</h3>
+        <input type="number" id="p3" placeholder="猜數字">
+        <button onclick="guess(3)">猜</button>
+    </div>
+
+    <div class="player">
+        <h3>玩家4</h3>
+        <input type="number" id="p4" placeholder="猜數字">
+        <button onclick="guess(4)">猜</button>
+    </div>
+
+</div>
+
+<div class="container">
+
+    <!-- 數字卡 -->
+    <div class="grid" id="grid"></div>
+
+    <!-- 技能 -->
+    <div class="skills">
+        <div class="skill" onclick="rangeSkill()">📌 區間提示</div>
+        <div class="skill" onclick="closeSkill()">🎯 接近提示</div>
+    </div>
+
+</div>
+
+<script>
+
+// ========================
+// 初始化
+// ========================
+let answer = Math.floor(Math.random()*100)+1;
+
+let currentPlayer = 1;
+
+let msg = document.getElementById("msg");
+let turnText = document.getElementById("turnText");
+
+// ========================
+// 建立數字卡
+// ========================
+for(let i=1;i<=100;i++){
+
+    let card = document.createElement("div");
+    card.className = "card";
+    card.innerText = i;
+
+    card.onclick = function(){
+
+        if(card.classList.contains("used")) return;
+
+        checkGuess(i, currentPlayer, card);
+    };
+
+    document.getElementById("grid").appendChild(card);
+}
+
+// ========================
+// 玩家猜數字
+// ========================
+function guess(player){
+
+    let input = document.getElementById("p"+player);
+    let value = Number(input.value);
+
+    if(!value || value < 1 || value > 100){
+        msg.innerText = "請輸入 1~100";
+        return;
+    }
+
+    currentPlayer = player;
+    turnText.innerText = "目前：玩家" + player;
+
+    fakeCardGuess(value, player);
+}
+
+// 模擬卡片點擊
+function fakeCardGuess(value, player){
+
+    let cards = document.querySelectorAll(".card");
+
+    cards.forEach(c=>{
+        if(Number(c.innerText) === value){
+            checkGuess(value, player, c);
+        }
+    });
+}
+
+// ========================
+// 判斷
+// ========================
+function checkGuess(num, player, card){
+
+    card.classList.add("used");
+
+    if(num === answer){
+        msg.innerHTML = "🎉 玩家" + player + " 猜對了！答案：" + answer;
+        disableAll();
+    }
+    else if(num > answer){
+        msg.innerText = "📉 玩家" + player + " 太大了";
+    }
+    else{
+        msg.innerText = "📈 玩家" + player + " 太小了";
+    }
+
+    currentPlayer = player % 4 + 1;
+    turnText.innerText = "目前：玩家" + currentPlayer;
+}
+
+// ========================
+// 區間提示
+// ========================
+function rangeSkill(){
+
+    if(answer <= 25) msg.innerText = "📌 1~25";
+    else if(answer <= 50) msg.innerText = "📌 26~50";
+    else if(answer <= 75) msg.innerText = "📌 51~75";
+    else msg.innerText = "📌 76~100";
+}
+
+// ========================
+// 接近提示
+// ========================
+function closeSkill(){
+
+    let test = prompt("輸入測試數字");
+
+    test = Number(test);
+
+    if(Math.abs(answer - test) <= 10){
+        msg.innerText = "📌 距離 10 以內";
+    }else{
+        msg.innerText = "📌 超過 10";
+    }
+}
+
+// ========================
+// 結束遊戲
+// ========================
+function disableAll(){
+
+    document.querySelectorAll(".card").forEach(c=>{
+        c.style.pointerEvents = "none";
+    });
+}
+
+</script>
+
+</body>
+</html>
